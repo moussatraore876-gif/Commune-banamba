@@ -4,7 +4,12 @@
 </head><body><header><h1>Commune rurale de Banamba</h1><div>Espace d'administration</div></header><main>
 <div class="panel"><a href="./index.html">← Retour au site</a><p id="notice" role="status"></p></div>
 <section class="panel" id="login"><h2>Connexion</h2><form id="loginForm"><label for="email">Adresse email</label><input id="email" type="email" autocomplete="username" required><label for="password">Mot de passe</label><input id="password" type="password" autocomplete="current-password" required><button>Se connecter</button></form><button class="secondary" id="forgot">Mot de passe oublié</button></section>
-<section class="panel" id="dashboard" hidden><h2>Tableau de bord</h2><p id="identity"></p><button class="secondary" id="logout">Se déconnecter</button><h3 id="formTitle">Nouvelle publication</h3><form id="postForm"><label for="title">Titre</label><input id="title" maxlength="200" required><label for="category">Catégorie</label><input id="category" maxlength="100" placeholder="Actualités" required><label for="content">Contenu</label><textarea id="content" required></textarea><button id="submitPost">Publier</button><button class="secondary" id="cancelEdit" type="button" hidden>Annuler la modification</button></form><h3>Publications</h3><div id="posts"></div></section>
+<section class="panel" id="dashboard" hidden><h2>Tableau de bord</h2><p id="identity"></p><button class="secondary" id="logout">Se déconnecter</button><h3 id="formTitle">Nouvelle publication</h3><form id="postForm"><label for="title">Titre</label><input id="title" maxlength="200" required><label for="category">Catégorie</label><input id="category" maxlength="100" placeholder="Actualités" required><label for="content">Contenu</label><textarea id="content" required></textarea>
+  
+<label for="fichier">Joindre une photo ou un PDF</label>
+<input type="file" id="fichier"
+accept="image/jpeg,image/png,image/webp,application/pdf">
+<button id="submitPost">Publier</button><button class="secondary" id="cancelEdit" type="button" hidden>Annuler la modification</button></form><h3>Publications</h3><div id="posts"></div></section>
 </main><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><script>
 'use strict';
 const SUPABASE_URL='https://aansosjdgdtwewkrrweg.supabase.co';
