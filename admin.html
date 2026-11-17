@@ -31,5 +31,75 @@ document.getElementById('logout').addEventListener('click',async()=>{const {erro
 async function loadPosts(){const area=document.getElementById('posts');area.replaceChildren();const {data,error}=await client.from('publications').select('id,title,content,category,published_at,author_id').order('published_at',{ascending:false});if(error){message('Lecture des publications impossible : '+error.message);return;}if(!data.length){area.textContent='Aucune publication pour le moment.';return;}for(const post of data){const article=document.createElement('article'),h=document.createElement('h4'),p=document.createElement('p'),meta=document.createElement('div'),actions=document.createElement('div'),edit=document.createElement('button'),del=document.createElement('button');h.textContent=post.title;p.textContent=post.content;meta.className='small';meta.textContent=(post.category||'Actualités')+' · '+(post.published_at?new Date(post.published_at).toLocaleString('fr-FR'):'Date non renseignée');actions.className='actions';edit.textContent='Modifier';del.textContent='Supprimer';del.className='danger';edit.onclick=()=>{editingId=post.id;document.getElementById('title').value=post.title;document.getElementById('category').value=post.category||'Actualités';document.getElementById('content').value=post.content;document.getElementById('formTitle').textContent='Modifier une publication';document.getElementById('submitPost').textContent='Enregistrer';document.getElementById('cancelEdit').hidden=false;document.getElementById('postForm').scrollIntoView();};del.onclick=async()=>{if(!confirm('Supprimer définitivement cette publication ?'))return;const {error}=await client.from('publications').delete().eq('id',post.id);if(error)message('Suppression refusée : '+error.message);else{message('Publication supprimée.');await loadPosts();}};actions.append(edit,del);article.append(h,meta,p,actions);area.append(article);}}
 function resetForm(){editingId=null;document.getElementById('postForm').reset();document.getElementById('formTitle').textContent='Nouvelle publication';document.getElementById('submitPost').textContent='Publier';document.getElementById('cancelEdit').hidden=true;}
 document.getElementById('cancelEdit').onclick=resetForm;
-document.getElementById('postForm').addEventListener('submit',async e=>{e.preventDefault();if(!sessionUser)return;const payload={title:document.getElementById('title').value.trim(),category:document.getElementById('category').value.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/s$/,''),content:document.getElementById('content').value.trim()};if(!payload.title||!payload.content)return;const result=editingId===null?await client.from('publications').insert({...payload,author_id:sessionUser.id}):await client.from('publications').update(payload).eq('id',editingId);if(result.error){message('Enregistrement refusé : '+result.error.message);return;}message('Publication enregistrée.');resetForm();await loadPosts();});
+
+document.getElementById('postForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!sessionUser) return;
+
+  const payload = {
+    title: document.getElementById('title').value.trim(),
+    category: document.getElementById('category').value.trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/s$/, ''),
+    content: document.getElementById('content').value.trim()
+  };
+
+  if (!payload.title || !payload.content) return;
+
+  const input = document.getElementById('fichier');
+  const fichier = input?.files?.[0];
+
+  if (fichier) {
+    const types = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+
+    if (!types.includes(fichier.type)) {
+      message('Format refusé. Utilisez JPG, PNG, WebP ou PDF.');
+      return;
+    }
+
+    if (fichier.size > 10 * 1024 * 1024) {
+      message('Le fichier ne doit pas dépasser 10 Mo.');
+      return;
+    }
+
+    const extension = fichier.name.split('.').pop().toLowerCase();
+    const chemin = `${sessionUser.id}/${crypto.randomUUID()}.${extension}`;
+
+    message('Envoi du fichier en cours...');
+
+    const { error: uploadError } = await client.storage
+      .from('publications')
+      .upload(chemin, fichier, { upsert: false });
+
+    if (uploadError) {
+      message('Erreur d’envoi : ' + uploadError.message);
+      return;
+    }
+
+    const { data } = client.storage
+      .from('publications')
+      .getPublicUrl(chemin);
+
+    payload.file_url = data.publicUrl;
+  }
+
+  const result = editingId === null
+    ? await client.from('publications')
+        .insert({ ...payload, author_id: sessionUser.id })
+    : await client.from('publications')
+        .update(payload)
+        .eq('id', editingId);
+
+  if (result.error) {
+    message('Enregistrement refusé : ' + result.error.message);
+    return;
+  }
+
+  message('Publication enregistrée.');
+  resetForm();
+  await loadPosts();
+});
+
 </script></body></html>
