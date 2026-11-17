@@ -34,7 +34,7 @@ async function chargerActualites() {
     return;
   }
   try {
-    const endpoint = SUPABASE_URL + '/rest/v1/publications?select=id,title,content,category,published_at&order=published_at.desc&limit=30';
+    const endpoint = SUPABASE_URL + '/rest/v1/publications?select=id,title,content,category,published_at,file_url&order=published_at.desc&limit=30';
     const response = await fetch(endpoint, {
       headers: { apikey: SUPABASE_PUBLIC_KEY, Authorization: 'Bearer ' + SUPABASE_PUBLIC_KEY }
     });
@@ -55,6 +55,28 @@ async function chargerActualites() {
       contenu.style.whiteSpace = 'pre-wrap';
       contenu.textContent = post.content || '';
       article.append(meta, titre, contenu);
+      if (post.file_url) {
+  const url = post.file_url;
+  const chemin = new URL(url, location.href).pathname.toLowerCase();
+
+  if (/\.(jpg|jpeg|png|webp)$/.test(chemin)) {
+    const photo = document.createElement('img');
+    photo.src = url;
+    photo.alt = post.title || 'Photo';
+    photo.style.width = '100%';
+    photo.style.maxWidth = '650px';
+    photo.style.borderRadius = '10px';
+    photo.style.marginTop = '15px';
+    article.append(photo);
+  } else if (chemin.endsWith('.pdf')) {
+    const lien = document.createElement('a');
+    lien.href = url;
+    lien.textContent = '📄 Ouvrir le document PDF';
+    lien.target = '_blank';
+    lien.rel = 'noopener noreferrer';
+    article.append(lien);
+  }
+}
       zone.append(article);
     }
     status.textContent = publications.length ? publications.length + ' publication(s) disponible(s).' : 'Aucune nouvelle publication pour le moment.';
