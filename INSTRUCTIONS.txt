@@ -1,7 +1,0 @@
-Photos de la mairie de Banamba
-
-Ajouter les deux fichiers JPG dans le dossier images/ du depot GitHub (ou adapter les chemins).
-Dans le code HTML, utiliser :
-images/cheick-fantamady-diallo.jpg
-images/lancine-dembele.jpg
-Attention : les noms et les majuscules doivent correspondre exactement.
